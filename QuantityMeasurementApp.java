@@ -39,19 +39,24 @@ public class QuantityMeasurementApp {
             return unit.toFeet(value);
         }
 
-        // ===== ADD METHOD =====
+        // ===== UC6 METHOD (default) =====
         public Quantity add(Quantity other) {
-            if (other == null) {
-                throw new IllegalArgumentException("Second operand is null");
+            return add(other, this.unit);
+        }
+
+        // ===== UC7 METHOD (target unit) =====
+        public Quantity add(Quantity other, LengthUnit targetUnit) {
+            if (other == null || targetUnit == null) {
+                throw new IllegalArgumentException("Invalid input");
             }
 
-            // Convert both to base (feet)
-            double sumInFeet = this.toBase() + other.toBase();
+            // Convert both → base (feet)
+            double sum = this.toBase() + other.toBase();
 
-            // Convert back to unit of FIRST operand
-            double resultValue = unit.fromFeet(sumInFeet);
+            // Convert → target unit
+            double result = targetUnit.fromFeet(sum);
 
-            return new Quantity(resultValue, this.unit);
+            return new Quantity(result, targetUnit);
         }
 
         @Override
@@ -63,34 +68,16 @@ public class QuantityMeasurementApp {
     // ===== MAIN =====
     public static void main(String[] args) {
 
-        // Same unit
-        System.out.println(
-            new Quantity(1.0, LengthUnit.FEET)
-            .add(new Quantity(2.0, LengthUnit.FEET))
-        );
+        Quantity a = new Quantity(1.0, LengthUnit.FEET);
+        Quantity b = new Quantity(12.0, LengthUnit.INCHES);
 
-        // Cross unit
-        System.out.println(
-            new Quantity(1.0, LengthUnit.FEET)
-            .add(new Quantity(12.0, LengthUnit.INCHES))
-        );
+        System.out.println(a.add(b, LengthUnit.FEET));       // 2 feet
+        System.out.println(a.add(b, LengthUnit.INCHES));     // 24 inches
+        System.out.println(a.add(b, LengthUnit.YARDS));      // ~0.667 yards
 
-        // Reverse (result in inches)
         System.out.println(
-            new Quantity(12.0, LengthUnit.INCHES)
-            .add(new Quantity(1.0, LengthUnit.FEET))
-        );
-
-        // Yards example
-        System.out.println(
-            new Quantity(1.0, LengthUnit.YARDS)
-            .add(new Quantity(3.0, LengthUnit.FEET))
-        );
-
-        // CM example
-        System.out.println(
-            new Quantity(2.54, LengthUnit.CENTIMETERS)
-            .add(new Quantity(1.0, LengthUnit.INCHES))
+            new Quantity(36.0, LengthUnit.INCHES)
+            .add(new Quantity(1.0, LengthUnit.YARDS), LengthUnit.FEET)
         );
     }
 }
