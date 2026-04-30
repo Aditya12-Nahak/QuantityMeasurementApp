@@ -22,38 +22,75 @@ public class QuantityMeasurementApp {
         }
     }
 
-    // ===== CONVERSION API =====
-    public static double convert(double value, LengthUnit source, LengthUnit target) {
+    // ===== QUANTITY CLASS =====
+    static class Quantity {
+        private final double value;
+        private final LengthUnit unit;
 
-        // Validation
-        if (source == null || target == null) {
-            throw new IllegalArgumentException("Unit cannot be null");
+        public Quantity(double value, LengthUnit unit) {
+            if (unit == null || !Double.isFinite(value)) {
+                throw new IllegalArgumentException("Invalid input");
+            }
+            this.value = value;
+            this.unit = unit;
         }
 
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Invalid numeric value");
+        private double toBase() {
+            return unit.toFeet(value);
         }
 
-        // Step 1: Convert to base (feet)
-        double base = source.toFeet(value);
+        // ===== ADD METHOD =====
+        public Quantity add(Quantity other) {
+            if (other == null) {
+                throw new IllegalArgumentException("Second operand is null");
+            }
 
-        // Step 2: Convert to target
-        return target.fromFeet(base);
+            // Convert both to base (feet)
+            double sumInFeet = this.toBase() + other.toBase();
+
+            // Convert back to unit of FIRST operand
+            double resultValue = unit.fromFeet(sumInFeet);
+
+            return new Quantity(resultValue, this.unit);
+        }
+
+        @Override
+        public String toString() {
+            return "Quantity(" + value + ", " + unit + ")";
+        }
     }
 
     // ===== MAIN =====
     public static void main(String[] args) {
 
-        System.out.println("1 ft → inch: " +
-                convert(1.0, LengthUnit.FEET, LengthUnit.INCHES));
+        // Same unit
+        System.out.println(
+            new Quantity(1.0, LengthUnit.FEET)
+            .add(new Quantity(2.0, LengthUnit.FEET))
+        );
 
-        System.out.println("3 yards → feet: " +
-                convert(3.0, LengthUnit.YARDS, LengthUnit.FEET));
+        // Cross unit
+        System.out.println(
+            new Quantity(1.0, LengthUnit.FEET)
+            .add(new Quantity(12.0, LengthUnit.INCHES))
+        );
 
-        System.out.println("36 inch → yard: " +
-                convert(36.0, LengthUnit.INCHES, LengthUnit.YARDS));
+        // Reverse (result in inches)
+        System.out.println(
+            new Quantity(12.0, LengthUnit.INCHES)
+            .add(new Quantity(1.0, LengthUnit.FEET))
+        );
 
-        System.out.println("1 cm → inch: " +
-                convert(1.0, LengthUnit.CENTIMETERS, LengthUnit.INCHES));
+        // Yards example
+        System.out.println(
+            new Quantity(1.0, LengthUnit.YARDS)
+            .add(new Quantity(3.0, LengthUnit.FEET))
+        );
+
+        // CM example
+        System.out.println(
+            new Quantity(2.54, LengthUnit.CENTIMETERS)
+            .add(new Quantity(1.0, LengthUnit.INCHES))
+        );
     }
 }
