@@ -1,35 +1,23 @@
-public class QuantityMeasurementApp {
+import java.util.LinkedHashSet;
 
-    // Inner class
-    static class Feet {
-        private final double value;
-
-        public Feet(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            // Same reference
-            if (this == obj) return true;
-
-            // Null or different class
-            if (obj == null || getClass() != obj.getClass()) return false;
-
-            // Type cast
-            Feet other = (Feet) obj;
-
-            // Compare values safely
-            return Double.compare(this.value, other.value) == 0;
-        }
-    }
+public class TrainConsistUC5 {
 
     public static void main(String[] args) {
 
-        Feet f1 = new Feet(1.0);
-        Feet f2 = new Feet(1.0);
+        // LinkedHashSet maintains insertion order + no duplicates
+        LinkedHashSet<String> trainFormation = new LinkedHashSet<>();
 
-        System.out.println("Are equal? " + f1.equals(f2));
+        // Adding bogies
+        trainFormation.add("Engine");
+        trainFormation.add("Sleeper");
+        trainFormation.add("Cargo");
+        trainFormation.add("Guard");
+
+        // Attempt duplicate
+        trainFormation.add("Sleeper"); // will be ignored
+
+        // Display formation
+        System.out.println("Final Train Formation:");
+        System.out.println(trainFormation);
     }
 }
