@@ -1,3 +1,5 @@
+import java.util.function.DoubleBinaryOperator;
+
 public class Quantity<U extends IMeasurable> {
 
     private final double value;
@@ -15,90 +17,102 @@ public class Quantity<U extends IMeasurable> {
         return unit.toBase(value);
     }
 
-    // ===== EQUALITY =====
-    @Override
-    public boolean equals(Object obj) {
+    // ===== ENUM for operations =====
+    private enum ArithmeticOperation {
+        ADD((a, b) -> a + b),
+        SUBTRACT((a, b) -> a - b),
+        DIVIDE((a, b) -> {
+            if (b == 0) throw new ArithmeticException("Division by zero");
+            return a / b;
+        });
 
-        if (this == obj) return true;
+        private final DoubleBinaryOperator op;
 
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        Quantity<?> other = (Quantity<?>) obj;
-
-        // Prevent cross-category comparison
-        if (this.unit.getClass() != other.unit.getClass()) {
-            return false;
+        ArithmeticOperation(DoubleBinaryOperator op) {
+            this.op = op;
         }
 
-        return Double.compare(this.toBase(), other.toBase()) == 0;
+        public double apply(double a, double b) {
+            return op.applyAsDouble(a, b);
+        }
     }
 
-    // ===== CONVERSION =====
-    public Quantity<U> convertTo(U target) {
-        double base = this.toBase();
-        double result = target.fromBase(base);
-        return new Quantity<>(result, target);
-    }
-// ===== SUBTRACTION (default unit) =====
-public Quantity<U> subtract(Quantity<U> other) {
-    return subtract(other, this.unit);
-}
+    // ===== CENTRAL VALIDATION =====
+    private void validate(Quantity<U> other, U target, boolean needTarget) {
 
-// ===== SUBTRACTION (target unit) =====
-public Quantity<U> subtract(Quantity<U> other, U target) {
+        if (other == null) {
+            throw new IllegalArgumentException("Other quantity is null");
+        }
 
-    if (other == null || target == null) {
-        throw new IllegalArgumentException("Invalid input");
-    }
+        if (this.unit.getClass() != other.unit.getClass()) {
+            throw new IllegalArgumentException("Different measurement categories");
+        }
 
-    // Prevent cross-category
-    if (this.unit.getClass() != other.unit.getClass()) {
-        throw new IllegalArgumentException("Different measurement categories");
+        if (!Double.isFinite(this.value) || !Double.isFinite(other.value)) {
+            throw new IllegalArgumentException("Invalid numeric values");
+        }
+
+        if (needTarget && target == null) {
+            throw new IllegalArgumentException("Target unit is null");
+        }
     }
 
-    double resultBase = this.toBase() - other.toBase();
-
-    double result = target.fromBase(resultBase);
-
-    // Round to 2 decimal places
-    result = Math.round(result * 100.0) / 100.0;
-
-    return new Quantity<>(result, target);
-}
-// ===== DIVISION =====
-public double divide(Quantity<U> other) {
-
-    if (other == null) {
-        throw new IllegalArgumentException("Invalid input");
+    // ===== CORE HELPER =====
+    private double performBaseOperation(Quantity<U> other, ArithmeticOperation op) {
+        double base1 = this.toBase();
+        double base2 = other.toBase();
+        return op.apply(base1, base2);
     }
 
-    // Prevent cross-category
-    if (this.unit.getClass() != other.unit.getClass()) {
-        throw new IllegalArgumentException("Different measurement categories");
+    private double round(double val) {
+        return Math.round(val * 100.0) / 100.0;
     }
 
-    double divisor = other.toBase();
-
-    if (divisor == 0) {
-        throw new ArithmeticException("Division by zero");
-    }
-
-    return this.toBase() / divisor;
-}
-    // ===== ADDITION =====
+    // ===== ADD =====
     public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);
     }
 
     public Quantity<U> add(Quantity<U> other, U target) {
-        if (other == null || target == null) {
-            throw new IllegalArgumentException("Invalid input");
-        }
+        validate(other, target, true);
+        double base = performBaseOperation(other, ArithmeticOperation.ADD);
+        return new Quantity<>(round(target.fromBase(base)), target);
+    }
 
-        double sum = this.toBase() + other.toBase();
-        double result = target.fromBase(sum);
+    // ===== SUBTRACT =====
+    public Quantity<U> subtract(Quantity<U> other) {
+        return subtract(other, this.unit);
+    }
 
-        return new Quantity<>(result, target);
+    public Quantity<U> subtract(Quantity<U> other, U target) {
+        validate(other, target, true);
+        double base = performBaseOperation(other, ArithmeticOperation.SUBTRACT);
+        return new Quantity<>(round(target.fromBase(base)), target);
+    }
+
+    // ===== DIVIDE =====
+    public double divide(Quantity<U> other) {
+        validate(other, null, false);
+        return performBaseOperation(other, ArithmeticOperation.DIVIDE);
+    }
+
+    // ===== CONVERSION =====
+    public Quantity<U> convertTo(U target) {
+        double base = this.toBase();
+        return new Quantity<>(target.fromBase(base), target);
+    }
+
+    // ===== EQUALITY =====
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Quantity<?> other = (Quantity<?>) obj;
+
+        if (this.unit.getClass() != other.unit.getClass()) return false;
+
+        return Double.compare(this.toBase(), other.toBase()) == 0;
     }
 
     @Override
