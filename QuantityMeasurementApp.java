@@ -1,28 +1,5 @@
 public class QuantityMeasurementApp {
 
-    // ===== ENUM =====
-    enum LengthUnit {
-        FEET(1.0),
-        INCHES(1.0 / 12.0),
-        YARDS(3.0),
-        CENTIMETERS(0.0328084);
-
-        private final double toFeet;
-
-        LengthUnit(double toFeet) {
-            this.toFeet = toFeet;
-        }
-
-        public double toFeet(double value) {
-            return value * toFeet;
-        }
-
-        public double fromFeet(double feetValue) {
-            return feetValue / toFeet;
-        }
-    }
-
-    // ===== QUANTITY CLASS =====
     static class Quantity {
         private final double value;
         private final LengthUnit unit;
@@ -35,28 +12,38 @@ public class QuantityMeasurementApp {
             this.unit = unit;
         }
 
-        private double toBase() {
-            return unit.toFeet(value);
+        // Convert to another unit
+        public Quantity convertTo(LengthUnit target) {
+            double base = unit.toBase(value);
+            double result = target.fromBase(base);
+            return new Quantity(result, target);
         }
 
-        // ===== UC6 METHOD (default) =====
-        public Quantity add(Quantity other) {
-            return add(other, this.unit);
-        }
-
-        // ===== UC7 METHOD (target unit) =====
-        public Quantity add(Quantity other, LengthUnit targetUnit) {
-            if (other == null || targetUnit == null) {
+        // Add with target unit (UC7 logic reused)
+        public Quantity add(Quantity other, LengthUnit target) {
+            if (other == null || target == null) {
                 throw new IllegalArgumentException("Invalid input");
             }
 
-            // Convert both → base (feet)
-            double sum = this.toBase() + other.toBase();
+            double sum = this.unit.toBase(this.value)
+                        + other.unit.toBase(other.value);
 
-            // Convert → target unit
-            double result = targetUnit.fromFeet(sum);
+            double result = target.fromBase(sum);
 
-            return new Quantity(result, targetUnit);
+            return new Quantity(result, target);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+
+            Quantity other = (Quantity) obj;
+
+            return Double.compare(
+                this.unit.toBase(this.value),
+                other.unit.toBase(other.value)
+            ) == 0;
         }
 
         @Override
@@ -68,16 +55,16 @@ public class QuantityMeasurementApp {
     // ===== MAIN =====
     public static void main(String[] args) {
 
-        Quantity a = new Quantity(1.0, LengthUnit.FEET);
-        Quantity b = new Quantity(12.0, LengthUnit.INCHES);
+        Quantity q1 = new Quantity(1.0, LengthUnit.FEET);
+        Quantity q2 = new Quantity(12.0, LengthUnit.INCHES);
 
-        System.out.println(a.add(b, LengthUnit.FEET));       // 2 feet
-        System.out.println(a.add(b, LengthUnit.INCHES));     // 24 inches
-        System.out.println(a.add(b, LengthUnit.YARDS));      // ~0.667 yards
+        // Conversion
+        System.out.println(q1.convertTo(LengthUnit.INCHES));
 
-        System.out.println(
-            new Quantity(36.0, LengthUnit.INCHES)
-            .add(new Quantity(1.0, LengthUnit.YARDS), LengthUnit.FEET)
-        );
+        // Addition
+        System.out.println(q1.add(q2, LengthUnit.FEET));
+
+        // Equality
+        System.out.println(q2.equals(new Quantity(1.0, LengthUnit.YARDS)));
     }
 }
