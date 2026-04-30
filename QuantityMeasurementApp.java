@@ -2,37 +2,22 @@ public class QuantityMeasurementApp {
 
     public static void main(String[] args) {
 
+        Quantity<LengthUnit> l1 = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> l2 = new Quantity<>(6.0, LengthUnit.INCHES);
+
+        System.out.println(l1.add(l2));
+        System.out.println(l1.subtract(l2));
+        System.out.println(l1.divide(new Quantity<>(2.0, LengthUnit.FEET)));
+
+        Quantity<WeightUnit> w1 = new Quantity<>(1.0, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> w2 = new Quantity<>(1000.0, WeightUnit.GRAM);
+
+        System.out.println(w1.add(w2));
+        System.out.println(w1.divide(w2));
+
         Quantity<VolumeUnit> v1 = new Quantity<>(1.0, VolumeUnit.LITRE);
         Quantity<VolumeUnit> v2 = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
-        Quantity<VolumeUnit> v3 = new Quantity<>(1.0, VolumeUnit.GALLON);
 
-        // Equality
-        System.out.println(v1.equals(v2)); // true
-
-        // Conversion
-        System.out.println(v1.convertTo(VolumeUnit.MILLILITRE));
-
-        // Addition
-        System.out.println(v1.add(v2)); // 2 litre
-        // ===== SUBTRACTION =====
-System.out.println(
-    new Quantity<>(10.0, LengthUnit.FEET)
-    .subtract(new Quantity<>(6.0, LengthUnit.INCHES))
-);
-
-// ===== SUBTRACTION WITH TARGET =====
-System.out.println(
-    new Quantity<>(10.0, LengthUnit.FEET)
-    .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.INCHES)
-);
-
-// ===== DIVISION =====
-System.out.println(
-    new Quantity<>(10.0, LengthUnit.FEET)
-    .divide(new Quantity<>(2.0, LengthUnit.FEET))
-);
-
-        // Cross unit addition
-        System.out.println(v1.add(v3, VolumeUnit.MILLILITRE));
+        System.out.println(v1.add(v2));
     }
 }
