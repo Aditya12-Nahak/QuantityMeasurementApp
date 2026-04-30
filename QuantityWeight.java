@@ -39,7 +39,52 @@ public class Quantity<U extends IMeasurable> {
         double result = target.fromBase(base);
         return new Quantity<>(result, target);
     }
+// ===== SUBTRACTION (default unit) =====
+public Quantity<U> subtract(Quantity<U> other) {
+    return subtract(other, this.unit);
+}
 
+// ===== SUBTRACTION (target unit) =====
+public Quantity<U> subtract(Quantity<U> other, U target) {
+
+    if (other == null || target == null) {
+        throw new IllegalArgumentException("Invalid input");
+    }
+
+    // Prevent cross-category
+    if (this.unit.getClass() != other.unit.getClass()) {
+        throw new IllegalArgumentException("Different measurement categories");
+    }
+
+    double resultBase = this.toBase() - other.toBase();
+
+    double result = target.fromBase(resultBase);
+
+    // Round to 2 decimal places
+    result = Math.round(result * 100.0) / 100.0;
+
+    return new Quantity<>(result, target);
+}
+// ===== DIVISION =====
+public double divide(Quantity<U> other) {
+
+    if (other == null) {
+        throw new IllegalArgumentException("Invalid input");
+    }
+
+    // Prevent cross-category
+    if (this.unit.getClass() != other.unit.getClass()) {
+        throw new IllegalArgumentException("Different measurement categories");
+    }
+
+    double divisor = other.toBase();
+
+    if (divisor == 0) {
+        throw new ArithmeticException("Division by zero");
+    }
+
+    return this.toBase() / divisor;
+}
     // ===== ADDITION =====
     public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);

@@ -14,6 +14,23 @@ public class QuantityMeasurementApp {
 
         // Addition
         System.out.println(v1.add(v2)); // 2 litre
+        // ===== SUBTRACTION =====
+System.out.println(
+    new Quantity<>(10.0, LengthUnit.FEET)
+    .subtract(new Quantity<>(6.0, LengthUnit.INCHES))
+);
+
+// ===== SUBTRACTION WITH TARGET =====
+System.out.println(
+    new Quantity<>(10.0, LengthUnit.FEET)
+    .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.INCHES)
+);
+
+// ===== DIVISION =====
+System.out.println(
+    new Quantity<>(10.0, LengthUnit.FEET)
+    .divide(new Quantity<>(2.0, LengthUnit.FEET))
+);
 
         // Cross unit addition
         System.out.println(v1.add(v3, VolumeUnit.MILLILITRE));
