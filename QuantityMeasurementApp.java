@@ -1,9 +1,11 @@
 public class QuantityMeasurementApp {
 
-    // ===== ENUM (Units with conversion to FEET) =====
+    // ===== ENUM (All units converted to FEET as base) =====
     enum LengthUnit {
         FEET(1.0),
-        INCH(1.0 / 12.0); // 1 inch = 1/12 feet
+        INCH(1.0 / 12.0),
+        YARDS(3.0),
+        CENTIMETER(0.0328084); // 1 cm = 0.0328084 feet
 
         private final double toFeet;
 
@@ -16,7 +18,7 @@ public class QuantityMeasurementApp {
         }
     }
 
-    // ===== GENERIC QUANTITY CLASS =====
+    // ===== GENERIC CLASS =====
     static class Quantity {
         private final double value;
         private final LengthUnit unit;
@@ -29,20 +31,16 @@ public class QuantityMeasurementApp {
             this.unit = unit;
         }
 
-        // Convert to base unit (feet)
         private double toBase() {
             return unit.toFeet(value);
         }
 
         @Override
         public boolean equals(Object obj) {
-
             if (this == obj) return true;
-
             if (obj == null || getClass() != obj.getClass()) return false;
 
             Quantity other = (Quantity) obj;
-
             return Double.compare(this.toBase(), other.toBase()) == 0;
         }
     }
@@ -50,14 +48,26 @@ public class QuantityMeasurementApp {
     // ===== MAIN =====
     public static void main(String[] args) {
 
-        Quantity q1 = new Quantity(1.0, LengthUnit.FEET);
-        Quantity q2 = new Quantity(12.0, LengthUnit.INCH);
+        // Yard ↔ Feet
+        System.out.println(
+            new Quantity(1.0, LengthUnit.YARDS)
+            .equals(new Quantity(3.0, LengthUnit.FEET))
+        );
 
-        System.out.println("1 ft == 12 inch ? " + q1.equals(q2));
+        // Yard ↔ Inches
+        System.out.println(
+            new Quantity(1.0, LengthUnit.YARDS)
+            .equals(new Quantity(36.0, LengthUnit.INCH))
+        );
 
-        Quantity q3 = new Quantity(1.0, LengthUnit.INCH);
-        Quantity q4 = new Quantity(1.0, LengthUnit.INCH);
+        // CM ↔ Inches
+        System.out.println(
+            new Quantity(1.0, LengthUnit.CENTIMETER)
+            .equals(new Quantity(0.393701, LengthUnit.INCH))
 
-        System.out.println("1 inch == 1 inch ? " + q3.equals(q4));
+        System.out.println(
+            new Quantity(2.0, LengthUnit.YARDS)
+            .equals(new Quantity(2.0, LengthUnit.YARDS))
+        );
     }
 }
