@@ -1,23 +1,25 @@
-public enum LengthUnit {
+public enum LengthUnit implements IMeasurable {
 
     FEET(1.0),
     INCHES(1.0 / 12.0),
     YARDS(3.0),
     CENTIMETERS(0.0328084);
 
-    private final double toFeet;
+    private final double factor;
 
-    LengthUnit(double toFeet) {
-        this.toFeet = toFeet;
+    LengthUnit(double factor) {
+        this.factor = factor;
     }
 
-    // Convert → base unit (feet)
     public double toBase(double value) {
-        return value * toFeet;
+        return value * factor;
     }
 
-    // Convert ← base unit (feet)
     public double fromBase(double baseValue) {
-        return baseValue / toFeet;
+        return baseValue / factor;
+    }
+
+    public String getUnitName() {
+        return this.name();
     }
 }

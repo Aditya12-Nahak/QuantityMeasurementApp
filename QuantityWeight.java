@@ -1,9 +1,9 @@
-public class QuantityWeight {
+public class Quantity<U extends IMeasurable> {
 
     private final double value;
-    private final WeightUnit unit;
+    private final U unit;
 
-    public QuantityWeight(double value, WeightUnit unit) {
+    public Quantity(double value, U unit) {
         if (unit == null || !Double.isFinite(value)) {
             throw new IllegalArgumentException("Invalid input");
         }
@@ -15,31 +15,37 @@ public class QuantityWeight {
         return unit.toBase(value);
     }
 
-    // ===== Equality =====
+    // ===== EQUALITY =====
     @Override
     public boolean equals(Object obj) {
+
         if (this == obj) return true;
+
         if (obj == null || getClass() != obj.getClass()) return false;
 
-        QuantityWeight other = (QuantityWeight) obj;
+        Quantity<?> other = (Quantity<?>) obj;
+
+        // Prevent cross-category comparison
+        if (this.unit.getClass() != other.unit.getClass()) {
+            return false;
+        }
 
         return Double.compare(this.toBase(), other.toBase()) == 0;
     }
 
-    // ===== Conversion =====
-    public QuantityWeight convertTo(WeightUnit target) {
+    // ===== CONVERSION =====
+    public Quantity<U> convertTo(U target) {
         double base = this.toBase();
         double result = target.fromBase(base);
-        return new QuantityWeight(result, target);
+        return new Quantity<>(result, target);
     }
 
-    // ===== Addition (default) =====
-    public QuantityWeight add(QuantityWeight other) {
+    // ===== ADDITION =====
+    public Quantity<U> add(Quantity<U> other) {
         return add(other, this.unit);
     }
 
-    // ===== Addition (target unit) =====
-    public QuantityWeight add(QuantityWeight other, WeightUnit target) {
+    public Quantity<U> add(Quantity<U> other, U target) {
         if (other == null || target == null) {
             throw new IllegalArgumentException("Invalid input");
         }
@@ -47,11 +53,11 @@ public class QuantityWeight {
         double sum = this.toBase() + other.toBase();
         double result = target.fromBase(sum);
 
-        return new QuantityWeight(result, target);
+        return new Quantity<>(result, target);
     }
 
     @Override
     public String toString() {
-        return "Quantity(" + value + ", " + unit + ")";
+        return "Quantity(" + value + ", " + unit.getUnitName() + ")";
     }
 }
